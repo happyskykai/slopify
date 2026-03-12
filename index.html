@@ -73,18 +73,19 @@
     }
 
     .panels {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       gap: 24px;
       width: 100%;
       max-width: 1100px;
-      align-items: flex-start;
+      align-items: start;
     }
 
     .panel {
-      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      min-width: 0;
     }
 
     .panel-header {
@@ -233,11 +234,63 @@
       color: rgba(255,255,255,0.75);
     }
 
-    @media (max-width: 680px) {
-      h1 { font-size: 64px; }
-      .panels { flex-direction: column; }
-      .center { flex-direction: row; padding-top: 0; }
-      .arrow { transform: rotate(90deg); }
+    /* ── Tablet ── */
+    @media (max-width: 900px) {
+      h1 { font-size: 80px; }
+      .subtitle { font-size: 28px; }
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 600px) {
+      body { padding: 24px 14px 48px; }
+
+      h1 { font-size: 52px; letter-spacing: 0.05em; }
+      .subtitle { font-size: 18px; margin-bottom: 24px; }
+
+      .panels {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      textarea, .output {
+        min-height: 220px;
+        font-size: 0.9rem;
+        padding: 14px;
+        resize: none;
+      }
+
+      .center {
+        flex-direction: row;
+        justify-content: center;
+        padding-top: 0;
+        gap: 10px;
+      }
+
+      .arrow {
+        display: none;
+      }
+
+      button {
+        padding: 13px 22px;
+        font-size: 0.95rem;
+        width: 100%;
+      }
+
+      .copy-btn {
+        width: auto;
+        padding: 6px 14px;
+        font-size: 0.75rem;
+      }
+
+      .counter {
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        margin-top: 32px;
+      }
+
+      footer {
+        font-size: 0.7rem;
+      }
     }
   </style>
 </head>

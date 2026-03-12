@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SLOPIFY</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 60px;
+      position: relative;
+      overflow-x: hidden;
+      background: #1a2535;
+    }
+
+    /* Bokeh background */
+    .bokeh {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .bokeh span {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.18;
+      animation: drift linear infinite;
+    }
+
+    @keyframes drift {
+      0%   { transform: translateY(0) scale(1); opacity: 0; }
+      10%  { opacity: 0.18; }
+      90%  { opacity: 0.18; }
+      100% { transform: translateY(-110vh) scale(1.1); opacity: 0; }
+    }
+
+    /* Content sits above bokeh */
+    h1, .subtitle, .panels, footer {
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: 120px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: #fff;
+      margin-bottom: 6px;
+      text-shadow: 0 4px 32px rgba(10,102,194,0.5);
+      line-height: 1;
+    }
+
+    .subtitle {
+      color: rgba(255,255,255,0.55);
+      font-size: 40px;
+      font-weight: 700;
+      margin-bottom: 40px;
+      line-height: 1.1;
+      text-align: center;
+    }
+
+    .panels {
+      display: flex;
+      gap: 24px;
+      width: 100%;
+      max-width: 1100px;
+      align-items: flex-start;
+    }
+
+    .panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 24px;
+    }
+
+    .panel-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.4);
+    }
+
+    textarea, .output {
+      width: 100%;
+      min-height: 360px;
+      border-radius: 14px;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      padding: 18px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: rgba(255,255,255,0.9);
+      resize: vertical;
+      font-family: inherit;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    textarea::placeholder {
+      color: rgba(255,255,255,0.25);
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: rgba(10,102,194,0.7);
+      background: rgba(255,255,255,0.1);
+    }
+
+    .output {
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: rgba(255,255,255,0.85);
+    }
+
+    .output.empty {
+      color: rgba(255,255,255,0.2);
+      font-style: italic;
+    }
+
+    .center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-top: 36px;
+      gap: 12px;
+    }
+
+    button {
+      background: #0a66c2;
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      padding: 14px 28px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      box-shadow: 0 4px 18px rgba(10,102,194,0.4);
+    }
+
+    button:hover {
+      background: #0a7ae0;
+      box-shadow: 0 6px 24px rgba(10,102,194,0.6);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .copy-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1.5px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.75);
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 20px;
+      box-shadow: none;
+      backdrop-filter: blur(8px);
+    }
+
+    .copy-btn:hover {
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      box-shadow: none;
+    }
+
+    .copy-btn.copied {
+      background: rgba(34,197,94,0.2);
+      border-color: rgba(34,197,94,0.5);
+      color: #86efac;
+    }
+
+    .arrow {
+      font-size: 1.4rem;
+      color: rgba(255,255,255,0.25);
+    }
+
+    .counter {
+      margin-top: 48px;
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+    }
+
+    .counter span {
+      color: rgba(255,255,255,0.5);
+    }
+
+    footer {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.25);
+      line-height: 1.7;
+    }
+
+    footer a {
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    footer a:hover {
+      color: rgba(255,255,255,0.75);
+    }
+
+    @media (max-width: 680px) {
+      h1 { font-size: 64px; }
+      .panels { flex-direction: column; }
+      .center { flex-direction: row; padding-top: 0; }
+      .arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Bokeh blobs -->
+  <div class="bokeh" id="bokeh"></div>
+
+  <h1>SLOPIFY</h1>
+  <p class="subtitle">Transform any human-written text into pure slop.</p>
+
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-label">Input</span>
+      </div>
+      <textarea id="input" placeholder="Paste a LinkedIn post here..."></textarea>
+    </div>
+
+    <div class="center">
+      <button onclick="slopify()">Slopify it!</button>
+      <span class="arrow">→</span>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-label">Output</span>
+        <button class="copy-btn" id="copyBtn" onclick="copyOutput()">Copy text</button>
+      </div>
+      <div class="output empty" id="output">Your slopified post will appear here...</div>
+    </div>
+  </div>
+
+  <p class="counter" id="counter">You have slopified content <span id="count">0</span> times so far.</p>
+
+  <footer>
+    &copy; 2026 Slopify. All slop reserved.<br>
+    Made by <a href="https://www.linkedin.com/in/tiankaifeng/" target="_blank" rel="noopener">Tiankai Feng</a>
+  </footer>
+
+  <script>
+    // Generate bokeh blobs
+    (function() {
+      const container = document.getElementById("bokeh");
+      const colors = [
+        "rgba(10,102,194,1)",
+        "rgba(80,140,210,1)",
+        "rgba(100,160,220,1)",
+        "rgba(50,90,160,1)",
+        "rgba(140,180,230,1)",
+        "rgba(30,60,120,1)",
+      ];
+      for (let i = 0; i < 18; i++) {
+        const span = document.createElement("span");
+        const size = 120 + Math.random() * 260;
+        const left = Math.random() * 110 - 5;
+        const startY = 10 + Math.random() * 100;
+        const duration = 18 + Math.random() * 24;
+        const delay = -(Math.random() * duration);
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        span.style.cssText = `
+          width: ${size}px; height: ${size}px;
+          left: ${left}%;
+          top: ${startY}%;
+          background: ${color};
+          animation-duration: ${duration}s;
+          animation-delay: ${delay}s;
+        `;
+        container.appendChild(span);
+      }
+    })();
+
+    function matchCase(original, replacement) {
+      if (original === original.toUpperCase()) return replacement.toUpperCase();
+      if (original[0] === original[0].toUpperCase()) {
+        return replacement[0].toUpperCase() + replacement.slice(1);
+      }
+      return replacement;
+    }
+
+    let slopCount = parseInt(localStorage.getItem("slopCount") || "0");
+    document.getElementById("count").textContent = slopCount.toLocaleString();
+
+    function slopify() {
+      const input = document.getElementById("input").value;
+      const output = document.getElementById("output");
+
+      if (!input.trim()) {
+        output.textContent = "Your slopified post will appear here...";
+        output.classList.add("empty");
+        return;
+      }
+
+      // Replace words (letters) and numbers with "slop"
+      const result = input.replace(/[a-zA-Z]+|\d+(\.\d+)?/g, match => {
+        if (/^\d/.test(match)) return "slop";
+        return matchCase(match, "slop");
+      });
+
+      output.textContent = result;
+      output.classList.remove("empty");
+
+      slopCount++;
+      localStorage.setItem("slopCount", slopCount);
+      document.getElementById("count").textContent = slopCount.toLocaleString();
+    }
+
+    function copyOutput() {
+      const output = document.getElementById("output");
+      const btn = document.getElementById("copyBtn");
+      if (output.classList.contains("empty")) return;
+
+      navigator.clipboard.writeText(output.textContent).then(() => {
+        btn.textContent = "Copied!";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "Copy text";
+          btn.classList.remove("copied");
+        }, 2000);
+      });
+    }
+
+    document.getElementById("input").addEventListener("keydown", e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") slopify();
+    });
+  </script>
+</body>
+</html>
